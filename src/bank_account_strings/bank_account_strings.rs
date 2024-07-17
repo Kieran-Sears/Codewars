@@ -6,46 +6,29 @@ const RAW_DIGITS: &str = concat! {
     "|_|  ||_  _|  | _||_|  ||_| _|\n"
 };
 
-fn structure_digits_10(raw: &str) -> [[[char; 3]; 3]; 10] {
-    let char_indices: String = raw
-        .chars()
-        .filter(|&c| c != '\n')
-        .collect();
+fn structure_digits(raw: &str) -> Vec<[[char; 3]; 3]> {
+    let char_indices: String = raw.chars().filter(|&c| c != '\n').collect();
+    let line_length = char_indices.len() / 3;
+    let num_digits = line_length / 3;
 
-    char_indices.chars().enumerate().fold([[['.'; 3]; 3]; 10], |mut acc, (index, char)| {
-        let line_length = 30;
-        let char_index_in_grid = index % line_length;
-        let row = index / line_length;
-        let col = (char_index_in_grid % line_length) % 3;
-        let pos = ((char_index_in_grid % line_length) / 3) % 10;
-        acc[pos][row][col] = char.clone();
+    char_indices.chars().enumerate().fold(
+        vec![[['.'; 3]; 3]; num_digits],
+        |mut acc, (index, char)| {
+            let char_index_in_grid = index % line_length;
+            let row = index / line_length;
+            let col = (char_index_in_grid % line_length) % 3;
+            let pos = ((char_index_in_grid % line_length) / 3) % num_digits;
 
-        acc
-    })
+            acc[pos][row][col] = char;
+
+            acc
+        },
+    )
 }
 
-fn structure_digits_9(raw: &str) -> [[[char; 3]; 3]; 9] {
-    let char_indices: String = raw
-        .chars()
-        .filter(|&c| c != '\n')
-        .collect();
-
-    char_indices.chars().enumerate().fold([[['.'; 3]; 3]; 9], |mut acc, (index, char)| {
-        let line_length = 27;
-        let char_index_in_grid = index % line_length;
-        let row = index / line_length;
-        let col = (char_index_in_grid % line_length) % 3;
-        let pos = ((char_index_in_grid % line_length) / 3) % 10;
-        // println!("[row: {}, col: {}, pos: {}, index: {}]", row, col, pos, index);
-        acc[pos][row][col] = char.clone();
-
-        acc
-    })
-}
-
-fn decypher_digit(array3d: &[[[char; 3]; 3]; 10], array2d: &[[char; 3]; 3]) -> Option<usize> {
+fn decypher_digit(array3d: &Vec<[[char; 3]; 3]>, array2d: &[[char; 3]; 3]) -> String {
     match array3d.iter().position(|x| x == array2d) {
-        Some(digit) => Some(digit),
+        Some(digit) => digit.to_string(),
         None => {
             for row in array2d.iter() {
                 for &element in row.iter() {
@@ -53,17 +36,18 @@ fn decypher_digit(array3d: &[[[char; 3]; 3]; 10], array2d: &[[char; 3]; 3]) -> O
                 }
                 println!();
             }
-            None
+            "".to_string()
         }
     }
 }
 
 pub fn parse_bank_account(bank_account: &str) -> u64 {
-    let cypher = structure_digits_10(RAW_DIGITS);
-    let account_digits = structure_digits_9(bank_account);
+    let cypher = structure_digits(RAW_DIGITS);
+    let account_digits = structure_digits(bank_account);
+
     account_digits
         .iter()
-        .map(|digit| decypher_digit(&cypher, digit).unwrap().to_string())
+        .map(|digit| decypher_digit(&cypher, digit))
         .collect::<String>()
         .parse::<u64>()
         .unwrap()
