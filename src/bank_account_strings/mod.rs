@@ -1,2 +1,1 @@
-mod bank_account_strings;
-mod bank_account_strings_test;
+pub mod bank_account_strings;
